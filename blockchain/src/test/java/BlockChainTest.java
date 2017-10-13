@@ -15,13 +15,12 @@ public class BlockChainTest {
     Blockchain blockchain;
     List<User> users;
     List<Account> accounts;
-
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+    Transactions transactions = new Transactions();
 
     @Before
     public void initialize() {
         blockchain = new Blockchain();
+        accounts = new ArrayList<Account>();
         users = new ArrayList<User>() {
          @Override
          public boolean contains(Object o) {
@@ -35,18 +34,6 @@ public class BlockChainTest {
              return false;
          }
         };
-    }
-
-    @Before
-    public void setUpStreams() {
-        System.setOut(new PrintStream(outContent));
-        System.setErr(new PrintStream(errContent));
-    }
-
-    @After
-    public void cleanUpStreams() {
-        System.setOut(null);
-        System.setErr(null);
     }
 
     @Test
@@ -79,16 +66,42 @@ public class BlockChainTest {
 
     @Test
     public void createAccounts() {
-        for (User user: this.users) {
+        for (User user: users) {
             Account account = new Account(user, 1000);
-            this.accounts.add(account);
+            accounts.add(account);
         }
 
-        System.out.println(this.accounts.size());
-
-        for (Account account: this.accounts) {
-            System.out.println(account.balance);
-            Assert.assertEquals(true, this.users.contains(account.user));
+        for (Account account: accounts) {
+            Assert.assertEquals(true, users.contains(account.user));
         }
+    }
+
+    @Test
+    public void createTransactions() throws Exception {
+        Random random = new Random();
+        for(int i = 0; i < this.accounts.size(); i++) {
+
+            Account from = accounts.get(i);
+            Account to = (i == this.accounts.size() - 1 ? accounts.get(0) : accounts.get(i + 1));
+
+            Account fromBeforeTransaction = new Account(from.user, from.balance);
+            Account toBeforeTransaction = new Account(to.user, to.balance);
+
+            double amountToTransfer = random.nextInt(100 - 1 + 1) + 1;
+
+            Transaction transaction = new Transaction(from, amountToTransfer, to);
+            if(transaction.transact()) {
+                transactions.add(transaction);
+            }
+            Assert.assertEquals(true, from.balance != fromBeforeTransaction.balance && to.balance != toBeforeTransaction.balance);
+        }
+    }
+
+    @Test
+    public void createBlockchain() {
+        Block block = new Block(this.transactions);
+        Blockchain blockchain = new Blockchain();
+        blockchain.add(block);
+        Assert.assertEquals(1, blockchain.size());
     }
 }

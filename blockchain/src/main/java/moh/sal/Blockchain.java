@@ -1,5 +1,7 @@
 package moh.sal;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,7 +26,7 @@ public class Blockchain extends LinkedList<Block> {
         String hash;
         MessageDigest messageDigest = MessageDigest.getInstance(HASH_ALGORITHM);
         for(double i = 0; i < Double.MAX_VALUE; i++) {
-            String data = block.index + block.transactions.toString() + block.previousHash;
+            String data = block.index + block.transactions.toString() + block.previousHash + i;
             byte[] hashBytes = messageDigest.digest(data.getBytes());
             hash = DatatypeConverter.printHexBinary(hashBytes);
             if(hash.substring(0, 4).equals("0000")) {
@@ -43,17 +45,17 @@ public class Blockchain extends LinkedList<Block> {
     }
 
     private Block genesisBlock(Block block) throws NoSuchAlgorithmException {
-        block.nonce = calculateNonce(block);
         block.index = 1;
         block.previousHash = generate64Zeros();
+        block.nonce = calculateNonce(block);
         block.hash = generateHash(block);
         return block;
     }
 
     private Block signBlock(Block block) throws NoSuchAlgorithmException {
-        block.nonce = calculateNonce(block);
         block.index = this.size();
         block.previousHash = this.get(this.size() - 1).hash;
+        block.nonce = calculateNonce(block);
         block.hash = generateHash(block);
         return block;
     }
@@ -86,7 +88,6 @@ public class Blockchain extends LinkedList<Block> {
         try {
             if(super.size() == 0) {
                 block = genesisBlock(block);
-
             } else {
                 block = signBlock(block);
             }
