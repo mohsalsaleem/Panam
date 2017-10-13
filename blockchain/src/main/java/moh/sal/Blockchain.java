@@ -1,7 +1,5 @@
 package moh.sal;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
