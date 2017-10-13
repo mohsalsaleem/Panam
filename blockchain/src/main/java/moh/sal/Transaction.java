@@ -9,15 +9,25 @@ public class Transaction {
     /**
      * Sent amount
      */
-    public double sent;
+    public double amountToSend;
 
     /**
      * To Account
      */
     public Account to;
 
-    /**
-     * Amount received
-     */
-    public double received;
+    public Transaction(Account from, double amountToSend, Account to) {
+        this.from = from;
+        this.amountToSend = amountToSend;
+        this.to = to;
+    }
+
+    public boolean transact() throws Exception {
+        if(from.balance <= 0) {
+            throw new Exception("Invalid amount in account " + from.user.name);
+        }
+        from.balance = from.balance - amountToSend;
+        to.balance = to.balance + amountToSend;
+        return true;
+    }
 }

@@ -10,4 +10,9 @@ public class Account {
      * Balance in the account.
      */
     public double balance;
+
+    public Account(User user, double balance) {
+        this.user = user;
+        this.balance = balance;
+    }
 }
