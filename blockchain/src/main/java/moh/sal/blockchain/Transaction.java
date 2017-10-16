@@ -1,6 +1,4 @@
-package moh.sal;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+package moh.sal.blockchain;
 
 public class Transaction {
     /**

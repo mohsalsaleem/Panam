@@ -1,4 +1,4 @@
-package moh.sal;
+package moh.sal.blockchain;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;

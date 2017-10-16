@@ -1,4 +1,4 @@
-package moh.sal;
+package moh.sal.blockchain;
 
 public class User {
     /**

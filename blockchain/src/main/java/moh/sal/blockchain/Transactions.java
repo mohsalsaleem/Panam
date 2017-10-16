@@ -1,4 +1,4 @@
-package moh.sal;
+package moh.sal.blockchain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,13 +1,9 @@
-import moh.sal.*;
-import org.junit.After;
+import moh.sal.blockchain.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
