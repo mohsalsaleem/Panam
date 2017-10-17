@@ -1,8 +1,9 @@
 package moh.sal.peer;
 
 public class MessageTypes {
-    public static final int SEND_BLOCKS = 0b00;
-    public static final int ADD_BLOCK = 0b01;
-    public static final int REMOVE_PEER = 0b10;
-    public static final int ADD_PEER = 0b11;
+    public static final String SEND_BLOCKS = "SEND_BLOCKS";
+    public static final String ADD_BLOCK = "ADD_BLOCK";
+    public static final String REMOVE_PEER = "REMOVE_PEER";
+    public static final String ADD_PEER = "ADD_PEER";
+    public static final String SENDING_BLOCKS = "SENDING_BLOCKS";
 }

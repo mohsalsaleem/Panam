@@ -4,6 +4,9 @@ import io.vertx.core.Vertx;
 
 import java.util.HashMap;
 
+/**
+ * @author mohsal
+ */
 public class Runner {
 
     public static HashMap<String, String> commandLineOptionsParser(String args[]) throws Exception {
@@ -26,7 +29,7 @@ public class Runner {
         return options;
     }
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
             HashMap<String, String> options = commandLineOptionsParser(args);
             Vertx vertx = Vertx.vertx();
