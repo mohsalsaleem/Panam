@@ -19,13 +19,14 @@ import moh.sal.blockchain.Blockchain;
 import moh.sal.peer.communication.ObjectSerializer;
 import moh.sal.peer.communication.PeerCom;
 import moh.sal.peer.communication.PeerCom.*;
+import moh.sal.utils.Serializer;
 
 public class Peer extends AbstractVerticle {
-    private Blockchain blockchain = new Blockchain();
+    static Blockchain blockchain = new Blockchain();
+    static List<PeerEntry> peerEntries = new ArrayList<>();
 
     private final HashMap<String, String> OPTIONS;
     private HttpClient httpClient;
-    private List<PeerEntry> peerEntries = new ArrayList<>();
     private Host me;
 
     Peer(HashMap<String, String> options) {
@@ -42,16 +43,16 @@ public class Peer extends AbstractVerticle {
     public void start() throws Exception {
         System.out.println("Starting..");
         httpClient = vertx.createHttpClient();
-        vertx.createHttpServer().websocketHandler(serverWebSocket -> {
+        vertx.createHttpServer().websocketHandler((ServerWebSocket serverWebSocket) -> {
+            System.out.println("Connection received.");
             if(!serverWebSocket.path().equals("/ws")) {
+                System.out.println("Connection request rejected.");
                 serverWebSocket.reject();
             } else {
-                serverWebSocket.frameHandler(webSocketFrame -> {
-                    try {
-                        handleMessage(serverWebSocket);
-                    } catch (InvalidProtocolBufferException e) {
-                        e.printStackTrace();
-                    }
+                serverWebSocket.frameHandler(new MessageHandler(serverWebSocket));
+
+                serverWebSocket.closeHandler(closeHandler -> {
+                   System.out.println("Closed");
                 });
             }
         }).listen(me.port);
@@ -66,43 +67,6 @@ public class Peer extends AbstractVerticle {
             }
             peerEntries.addAll(peerEntryList);
         }
-    }
-
-    private void handleMessage(ServerWebSocket serverWebSocket) throws InvalidProtocolBufferException {
-        serverWebSocket.frameHandler(webSocketFrame -> {
-            if (webSocketFrame.isBinary() && webSocketFrame.isFinal()) {
-                Buffer buffer = webSocketFrame.binaryData();
-                byte[] arr = new byte[buffer.length()];
-                buffer.getBytes(arr);
-
-                Message message = null;
-                try {
-                    message = Message.parseFrom(arr);
-                    switch (message.getType()) {
-                        case MessageTypes.ADD_PEER:
-                            PeerEntry peerEntry = new PeerEntry(message.getAddPeerMessage().getPort(), message.getAddPeerMessage().getIp());
-                            peerEntries.add(peerEntry);
-                        case MessageTypes.SEND_BLOCKS:
-                            byte[] bytes = ObjectSerializer.serialize(this.blockchain);
-                            Message.Blockchain blockchain = Message.Blockchain
-                                    .newBuilder()
-                                    .setBlockchain(ByteString.copyFrom(bytes))
-                                    .build();
-
-                            Message messageBuilder = Message
-                                    .newBuilder()
-                                    .setType(MessageTypes.SENDING_BLOCKS)
-                                    .setBlockchainMessage(blockchain)
-                                    .build();
-                            serverWebSocket.writeFinalBinaryFrame(Buffer.buffer(messageBuilder.toByteArray()));
-                    }
-                } catch (InvalidProtocolBufferException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
     }
 
     private Host setHost(String hostString) throws Exception {
@@ -128,6 +92,8 @@ public class Peer extends AbstractVerticle {
         Message message = messageBuilder.build();
         byte[] messageBytes = message.toByteArray();
         webSocket.writeFinalBinaryFrame(Buffer.buffer(messageBytes));
+
+        System.out.println(MessageTypes.ADD_PEER + " message sent.");
     }
 
     private List<PeerEntry> parsePeers(String peers) {
@@ -158,31 +124,6 @@ public class Peer extends AbstractVerticle {
         Host (String port, String ip) {
             this.port = Integer.parseInt(port);
             this.ip = ip;
-        }
-    }
-
-    private class PeerEntry {
-        int port;
-        String ip;
-        static final String PATH = "/ws";
-
-        PeerEntry(int port, String ip) {
-            this.port = port;
-            this.ip = ip;
-        }
-
-        PeerEntry(String port, String ip) {
-            this.port = Integer.parseInt(port);
-            this.ip = ip;
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            if(object instanceof PeerEntry) {
-                PeerEntry peerEntry = (PeerEntry) object;
-                return Objects.equals(peerEntry.ip, this.ip) && peerEntry.port == this.port;
-            }
-            return false;
         }
     }
 }
